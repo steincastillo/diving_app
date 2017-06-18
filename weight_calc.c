@@ -3,6 +3,12 @@
  *
  * Copyright 2016 Stein Castillo <stein_castillo@yahoo.com>
  *
+ * This is a prototype to test the accuracy of the weight belt calculator
+ * that will be incorporated later in a full fledge mobile application
+ *
+ * Note that error handling in these routines is very weak since it is intended
+ * to test the math and not the user interface
+ *
  */
 
 #include <stdio.h>
@@ -91,7 +97,7 @@ int main()
     {
         printf("\n*** Metric Units ***\n");
         input.body_weight = get_data("Body Weight (kgs): ");    //Body weight
-        input.body_height = get_data("Body Height (mts): ");    //Body height
+        input.body_height = get_data("Body Height (cms): ");    //Body height
         input.tsize = get_data("Tank size [lts]: ");            //Tank Size
         input.ttype = get_data("Steel tank [1/0]: ");           //Tank type
         input.rpressure = get_data("Rated pressure [BAR]: ");   //Rated Pressure
@@ -111,6 +117,12 @@ int main()
         input.wetsuit = get_data("Wetsuit thickness [mm]: ");   //Wetsuit
         input.hood = get_data("Wearing hood? [1/0]: ");         //Hood?
         input.salt_water = get_data("Salt water [1/0]: ");      //Salt Water?
+
+        // convert inputs to metric system
+        input.body_weight = input.body_weight * 0.453;          // convert to kgs
+        input.body_height = input.body_height * 2.54;           // convert to cms
+        input.tsize = input.tsize * 28.316;                     // convert to lts
+        input.rpressure = input.rpressure * 0.0689;             // convert to bar
     }
 
     printf("Calculating... \n");
@@ -175,18 +187,51 @@ int main()
     belt_high = tbelt + (tbelt * RANGE);
 
 	//print results
-	printf("\n*** RESULTS ***\n");
-	printf("Body Volume [mts3] %3.4f\n", body_volume);
-	printf("Tank Volume [mts3] %3.4f\n", tank_volume);
-	printf("Bouyancy [Newtons] %3.4f\n", bouyancy);
-	printf("Water pull [Newtons] %3.4f\n", pull);
-	printf("Weight belt 1/3 - Body & Tank [Kgs]: %3.4f\n", belt1);
-	printf("Weight belt 2/3 - Wet Suit    [Kgs]: %3.4f\n", belt2);
-	printf("Weight belt 3/3 - Hood        [Kgs]: %3.4f\n", belt3);
-	printf("Total weight belt:            [Kgs]: %3.1f\n", tbelt);
-	printf("************************************\n");
-	printf("Weight belt range [Kgs] from: %3.0f to %3.0f\n", belt_low, belt_high);
-    printf("\n");
+	if (metric == 1)
+    {
+        printf("\n*** RESULTS ***\n");
+        printf("***  Metric ***\n");
+        printf("***************\n");
+        printf("Body Volume [mts3] %3.4f\n", body_volume);
+        printf("Tank Volume [mts3] %3.4f\n", tank_volume);
+        printf("Buoyancy [Newtons] %3.4f\n", bouyancy);
+        printf("Water pull [Newtons] %3.4f\n", pull);
+        printf("Weight belt 1/3 - Body & Tank [Kgs]: %3.4f\n", belt1);
+        printf("Weight belt 2/3 - Wet Suit    [Kgs]: %3.4f\n", belt2);
+        printf("Weight belt 3/3 - Hood        [Kgs]: %3.4f\n", belt3);
+        printf("Total weight belt:            [Kgs]: %3.1f\n", tbelt);
+        printf("************************************\n");
+        printf("Weight belt range [Kgs] from: %3.0f to %3.0f\n", belt_low, belt_high);
+        printf("\n");
+    }
+    else
+    {
+        // Convert to imperial units
+        body_volume = body_volume * 35.314;     // Convert to ft3
+        tank_volume = tank_volume * 35.314;     // Convert to ft3
+        belt1 = belt1 * 2.204;                  // Convert to lbs
+        belt2 = belt2 * 2.204;                  // Convert to lbs
+        belt3 = belt3 * 2.204;                  // Convert to lbs
+        tbelt = tbelt * 2.204;                  // Convert to lbs
+        belt_low = belt_low * 2.204;            // Convert to lbs
+        belt_high = belt_high * 2.204;          // Convert to lbs
+
+        printf("\n*** RESULTS  ***\n");
+        printf("*** Imperial ***\n");
+        printf("****************\n");
+        printf("Body Volume [ft3] %3.4f\n", body_volume);
+        printf("Tank Volume [ft3] %3.4f\n", tank_volume);
+        printf("Buoyancy [Newtons] %3.4f\n", bouyancy);
+        printf("Water pull [Newtons] %3.4f\n", pull);
+        printf("Weight belt 1/3 - Body & Tank [Lbs]: %3.4f\n", belt1);
+        printf("Weight belt 2/3 - Wet Suit    [Lbs]: %3.4f\n", belt2);
+        printf("Weight belt 3/3 - Hood        [Lbs]: %3.4f\n", belt3);
+        printf("Total weight belt:            [Lbs]: %3.1f\n", tbelt);
+        printf("************************************\n");
+        printf("Weight belt range [Lbs] from: %3.0f to %3.0f\n", belt_low, belt_high);
+        printf("\n");
+    }
+
 
 	return 0;
 }
@@ -202,7 +247,6 @@ void printheader(void)
 	printf("*                          *\n");
 	printf("*Diving Weight CALCULATOR  *\n");
 	printf("*          v1.1            *\n");
-	printf("*   (Metric units only)    *\n");
 	printf("*                          *\n");
 	printf("****************************\n");
 
