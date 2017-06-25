@@ -15,11 +15,15 @@
 #define TRUE 1
 #define ERR_MSG "Please enter a valid number...\n"
 
+// determine the size of a table
+#define LEN(arr) ((int) (sizeof (arr) / sizeof (arr)[0]))
+
 //
 //Function prototypes
 //
 void printheader();
 float get_data(char msg[]);
+
 
 ///////////////////////////////////
 //
@@ -60,6 +64,45 @@ int main()
     const float wet_fresh = 0.884; // kg * mm in the wetsuit (fresh water)
     const float wet_hood = 0.453; // Add 1 lbs when wearing hood
     const float RANGE = 0.1;    // 10% variation for range calculation
+
+    //Declare parameters dataset
+
+    float water_density_fresh[7][2] =
+    {
+    {4, 1000.00},
+    {5, 1000.00},
+    {10, 999.98},
+    {15, 999.20},
+    {20, 998.30},
+    {25, 997.10},
+    {30, 995.70}
+    };
+
+    float water_density_salt[7][2] =
+    {
+    {4, 1024.00},
+    {5, 1024.00},
+    {10,1024.98},
+    {15,1024.15},
+    {20,1024.22},
+    {25,1022.00},
+    {30,1020.56}
+    };
+
+    float body_density1[3][2]=
+    {
+    {18.5, 1.282},
+    {24.9, 1.01},
+    {25.0, 0.808}
+    };
+
+    //test sizeof
+    int rows;
+    rows = LEN(water_density_salt);
+    printf("Array Size %d\n", rows);
+    rows = LEN(body_density1);
+    printf("Array Size %d\n", rows);
+
 
     //Declare variables
     int   metric; // metric or imperial?
@@ -103,6 +146,7 @@ int main()
         input.rpressure = get_data("Rated pressure [BAR]: ");   //Rated Pressure
         input.wetsuit = get_data("Wetsuit thickness [mm]: ");   //Wetsuit
         input.hood = get_data("Wearing hood? [1/0]: ");         //Hood?
+        input.water_temp = get_data("Temperature [c]: ");       //Temperature
         input.salt_water = get_data("Salt water [1/0]: ");      //Salt Water?
 
     }
@@ -116,6 +160,7 @@ int main()
         input.rpressure = get_data("Rated pressure [PSI]: ");   //Rated Pressure
         input.wetsuit = get_data("Wetsuit thickness [mm]: ");   //Wetsuit
         input.hood = get_data("Wearing hood? [1/0]: ");         //Hood?
+        input.water_temp = get_data("Temperature [F]: ");       //Temperature
         input.salt_water = get_data("Salt water [1/0]: ");      //Salt Water?
 
         // convert inputs to metric system
@@ -123,6 +168,7 @@ int main()
         input.body_height = input.body_height * 2.54;           // convert to cms
         input.tsize = input.tsize * 28.316;                     // convert to lts
         input.rpressure = input.rpressure * 0.0689;             // convert to bar
+        input.water_temp = (input.water_temp - 32)*(5/9);        // convert to celsius
     }
 
     printf("Calculating... \n");
@@ -266,4 +312,3 @@ float get_data(char msg[35])
     };
     return value;
 }
-
