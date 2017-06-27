@@ -23,6 +23,7 @@
 //
 void printheader();
 float get_data(char msg[]);
+float get_value(float arr[][2], int arr_size, float val);
 
 
 ///////////////////////////////////
@@ -98,14 +99,16 @@ int main()
 
     //test sizeof
     int rows;
-    rows = LEN(water_density_salt);
-    printf("Array Size %d\n", rows);
-    rows = LEN(body_density1);
-    printf("Array Size %d\n", rows);
+    float value;
+    value = get_value(water_density_fresh, LEN(water_density_fresh), 11);
+    printf("value %3.3f\n", value);
+    //rows = sizeof(water_density_salt);
+    //printf("Array Size %d\n", rows);
 
 
     //Declare variables
     int   metric; // metric or imperial?
+    float index;
     float body_volume, body_density;
     float body_bmi;
     float tank_volume;
@@ -311,4 +314,18 @@ float get_data(char msg[35])
         printf (ERR_MSG);
     };
     return value;
+}
+
+float get_value(float arr[][2], int arr_size, float val)
+{
+    int i=0;
+    float value;
+    arr_size--;
+    printf("Value: %3.2f\n", val);
+    while (val>=arr[i][0] && i<=arr_size)
+    {
+        i++;
+    }
+    return arr[--i][1];
+
 }
