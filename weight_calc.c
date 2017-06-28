@@ -40,27 +40,24 @@ int main()
         float body_weight;
         float body_height;
         float tsize;
-        int ttype;
+        int   ttype;
         float rpressure;
-        int  salt_water;
+        int   salt_water;
         int   water_temp;
         float wetsuit;
-        int  hood;
+        int   hood;
     };
 
     //Declare constants
     const float GRAVITY = 9.81;
-    const float body_density_low = 0.781; // gr/cm3 - Overweight, BMI > 25.0
-    const float body_density_norm = 1.01; // gr/cm3 - Normal weight BMI 18.5 - 24.9
-    const float body_density_high = 1.282; // gr/cm3 - Fitness  BMI < 18.5
     const float atm = 1.01; //bar
     const float cm2mt = 1000000;
     const float kg2gr = 1000;
-    const float lts2mt = 0.001;
+    const float lts2mt = 0.001225;
     const float salt = 1024.22; // salt water density kg/mts3 @20 celsius
     const float fresh = 998.3;  //fresh water density kg/mts3 @20 celsius
-    const float al_tank = 4.8; // Aluminum tank weight in kgs
-    const float fe_tank = 2.6; // Steel tank weight in kgs
+    const float al_tank = 14.2; // Aluminum tank weight in kgs
+    const float fe_tank = 12.7; // Steel tank weight in kgs
     const float wet_salt = 0.907; // kg * mm in the wetsuit (salt water)
     const float wet_fresh = 0.884; // kg * mm in the wetsuit (fresh water)
     const float wet_hood = 0.453; // Add 1 lbs when wearing hood
@@ -90,34 +87,34 @@ int main()
     {30,1020.56}
     };
 
-    float body_density1[3][2]=
+    float body_density1[3][2] =
     {
     {18.5, 1.282},
     {24.9, 1.01},
     {25.0, 0.808}
     };
 
-    //test sizeof
-    int rows;
-    float value;
-    value = get_value(water_density_fresh, LEN(water_density_fresh), 11);
-    printf("value %3.3f\n", value);
-    //rows = sizeof(water_density_salt);
-    //printf("Array Size %d\n", rows);
-
+    float gas_density[6][2] =
+    {
+    {5, 1.269},
+    {10, 1.247},
+    {15, 1.225},
+    {20, 1.204},
+    {25, 1.184},
+    {30, 1.165}
+    };
 
     //Declare variables
     int   metric; // metric or imperial?
     float index;
     float body_volume, body_density;
     float body_bmi;
-    float tank_volume;
+    float tank_volume, tank_density;
     float wpmm; //Weight * mm in the wetsuit
     float bouyancy;
     float wdensity, tweight, exweight;
     float pull;
     float belt1, belt2, belt3, tbelt, belt_low, belt_high;
-
 
 	//declare and initialize dive parameters
 	struct parameters input;
@@ -143,7 +140,7 @@ int main()
     {
         printf("\n*** Metric Units ***\n");
         input.body_weight = get_data("Body Weight (kgs): ");    //Body weight
-        input.body_height = get_data("Body Height (cms): ");    //Body height
+        input.body_height = get_data("Body Height (mts): ");    //Body height
         input.tsize = get_data("Tank size [lts]: ");            //Tank Size
         input.ttype = get_data("Steel tank [1/0]: ");           //Tank type
         input.rpressure = get_data("Rated pressure [BAR]: ");   //Rated Pressure
@@ -176,28 +173,14 @@ int main()
 
     printf("Calculating... \n");
 
-    body_bmi = (input.body_weight / input.body_height) / input.body_height;
-    if (body_bmi > 25.0) // Determine body density
-    {
-        body_density = body_density_low;
-    }
-    else if (body_bmi < 18.5)
-    {
-        body_density = body_density_high;
-    }
-    else
-    {
-        body_density = body_density_norm;
-    }
-
     if (input.salt_water == TRUE) // Salt water?
     {
-        wdensity = salt;
+        wdensity = get_value(water_density_salt, LEN(water_density_salt), input.water_temp);
         wpmm = wet_salt;
     }
     else
     {
-        wdensity = fresh;
+        wdensity = get_value(water_density_fresh, LEN(water_density_fresh), input.water_temp);
         wpmm = wet_fresh;
     }
 
@@ -210,6 +193,25 @@ int main()
         tweight = al_tank;
     }
 
+    body_bmi = (input.body_weight / input.body_height) / input.body_height;
+    body_density = get_value(body_density1, LEN(body_density1), body_bmi);
+
+    body_volume = (input.body_weight*kg2gr)/body_density; //body volume in cm3
+    body_volume = body_volume / cm2mt; // Body volume in mts3
+
+    tank_volume = (input.rpressure * input.tsize) / atm; // tank volume in lts
+    tank_volume = tank_volume * lts2mt;  // tanks volume in mts3
+
+    tank_density = get_value(gas_density, LEN(gas_density), input.water_temp);
+    tweight = tweight + (tank_volume * tank_density);
+
+    printf("Parameters... \n");
+    printf("Water density: %3.3f\n", wdensity);
+    printf("BMI: %3.3f\n", body_bmi);
+    printf("Body density: %3.3f\n", body_density);
+    printf("Gas density: %3.3f\n", tank_density);
+
+
     if (input.hood == TRUE) // wearing hood?
     {
         exweight = wet_hood;
@@ -218,12 +220,6 @@ int main()
     {
         exweight = 0;
     }
-
-    body_volume = (input.body_weight*kg2gr)/body_density; //body volume in cm3
-    body_volume = body_volume / cm2mt; // Body volume in mts3
-
-    tank_volume = (input.rpressure * input.tsize) / atm; // tank volume in lts
-    tank_volume = tank_volume * lts2mt;  // tanks volume in mts3
 
     bouyancy = (body_volume+tank_volume)*wdensity*GRAVITY;
     pull = (input.body_weight + tweight + input.tsize) * GRAVITY;
@@ -321,7 +317,6 @@ float get_value(float arr[][2], int arr_size, float val)
     int i=0;
     float value;
     arr_size--;
-    printf("Value: %3.2f\n", val);
     while (val>=arr[i][0] && i<=arr_size)
     {
         i++;
